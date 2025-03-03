@@ -132,7 +132,7 @@ const Simulator = () => {
       ); // Attacker loses some troops
       const defenderLosses = attackerWon ? killCount : killCount * 0.5; // Defender loses more if they lost
       const updatedDefenderManpower = Math.max(
-        0,
+        1,
         defenderManpower - defenderLosses,
       );
 
@@ -177,7 +177,7 @@ const Simulator = () => {
       // Update defender's trust toward attacker (significant drop)
       updatedDefenderTrust = Math.max(
         0,
-        Math.min(3, defenderTrust - baseTrustLoss * 1.5),
+        Math.min(1, defenderTrust - baseTrustLoss * 1.5),
       );
       newLogs.push({
         message: `Faction ${attackerFaction === "one" ? "2" : "1"}'s trust in Faction ${attackerFaction === "one" ? "1" : "2"} decreased from ${defenderTrust.toFixed(2)} to ${updatedDefenderTrust.toFixed(2)} (betrayal)`,
@@ -264,7 +264,7 @@ const Simulator = () => {
         // but still experiences slight trust decay due to the violence
         updatedAttackerTrust = Math.max(
           0,
-          Math.min(3, attackerTrust - baseTrustLoss * 0.3),
+          Math.min(1, attackerTrust - baseTrustLoss * 0.3),
         );
         newLogs.push({
           message: `Faction ${attackerFaction === "one" ? "1" : "2"}'s trust in Faction ${attackerFaction === "one" ? "2" : "1"} decreased from ${attackerTrust.toFixed(2)} to ${updatedAttackerTrust.toFixed(2)} (maintaining caution)`,
@@ -433,7 +433,7 @@ const Simulator = () => {
         // Trust update - attacker trust decreases more when they lose
         updatedAttackerTrust = Math.max(
           0,
-          Math.min(3, attackerTrust - baseTrustLoss * 0.7),
+          Math.min(1, attackerTrust - baseTrustLoss * 0.7),
         );
         newLogs.push({
           message: `Faction ${attackerFaction === "one" ? "1" : "2"}'s trust in Faction ${attackerFaction === "one" ? "2" : "1"} decreased from ${attackerTrust.toFixed(2)} to ${updatedAttackerTrust.toFixed(2)} (resentment from defeat)`,
@@ -458,7 +458,7 @@ const Simulator = () => {
           (baseImpactPercentage / 100) * defenderTech * 1.0;
         updatedDefenderTech = Math.max(
           1,
-          Math.min(1, defenderTech + defenderTechChange),
+          Math.min(3, defenderTech + defenderTechChange),
         );
         newLogs.push({
           message: `Faction ${attackerFaction === "one" ? "2" : "1"} tech increased from ${defenderTech.toFixed(2)} to ${updatedDefenderTech.toFixed(2)} (defensive innovations)`,
@@ -638,7 +638,7 @@ const Simulator = () => {
     const techCompatibilityWeight = 0.1;
 
     // Trust factor - higher trust means higher alliance probability
-    const trustFactor = (recipientTrust - 1) / 2; // Scale from 0 to 1
+    const trustFactor = recipientTrust; // Scale from 0 to 1
 
     // Calculate recipient's willingness for alliance
     const allianceWillingness =
@@ -800,9 +800,9 @@ const Simulator = () => {
       });
 
       // Trust significantly increases - successful alliance builds trust
-      const initiatorTrustChange = (baseImpactPercentage / 100) * 2.0; // Alliance has big impact on trust
+      const initiatorTrustChange = (baseImpactPercentage / 100) * 0.6; // Alliance has big impact on trust
       const updatedInitiatorTrust = Math.max(
-        1,
+        0,
         Math.min(1, initiatorTrust + initiatorTrustChange),
       );
       newLogs.push({
@@ -881,10 +881,10 @@ const Simulator = () => {
       });
 
       // Trust significantly increases - successful alliance builds trust
-      const recipientTrustChange = (baseImpactPercentage / 100) * 2.2; // Recipient gains more trust since they accepted
+      const recipientTrustChange = (baseImpactPercentage / 100) * 0.7; // Recipient gains more trust since they accepted
       const updatedRecipientTrust = Math.max(
-        1,
-        Math.min(3, recipientTrust + recipientTrustChange),
+        0,
+        Math.min(1, recipientTrust + recipientTrustChange),
       );
       newLogs.push({
         message: `Faction ${initiatorFaction === "one" ? "2" : "1"}'s trust in Faction ${initiatorFaction === "one" ? "1" : "2"} increased from ${recipientTrust.toFixed(2)} to ${updatedRecipientTrust.toFixed(2)} (mutual cooperation)`,
@@ -970,9 +970,9 @@ const Simulator = () => {
       });
 
       // Trust decreases - rejected alliance damages trust
-      const initiatorTrustChange = (baseImpactPercentage / 100) * 1.2;
+      const initiatorTrustChange = (baseImpactPercentage / 100) * 0.4;
       const updatedInitiatorTrust = Math.max(
-        1,
+        0,
         Math.min(1, initiatorTrust - initiatorTrustChange),
       );
       newLogs.push({
@@ -1002,8 +1002,8 @@ const Simulator = () => {
       // Trust might change slightly - they rejected but relations are still strained
       const recipientTrustChange = (baseImpactPercentage / 100) * 0.5;
       const updatedRecipientTrust = Math.max(
-        1,
-        Math.min(3, recipientTrust - recipientTrustChange),
+        0,
+        Math.min(1, recipientTrust - recipientTrustChange),
       );
       newLogs.push({
         message: `Faction ${initiatorFaction === "one" ? "2" : "1"}'s trust in Faction ${initiatorFaction === "one" ? "1" : "2"} decreased from ${recipientTrust.toFixed(2)} to ${updatedRecipientTrust.toFixed(2)} (diplomatic tension)`,
@@ -1092,15 +1092,6 @@ const Simulator = () => {
       return;
     }
 
-    if (tradeAmount > initiator.resources * 0.5) {
-      newLogs.push({
-        message: `Trade denied: Faction ${initiatorFaction === "one" ? "1" : "2"} cannot offer more than 50% of their resources`,
-        type: "warning",
-      });
-      updateLogs(newLogs);
-      return;
-    }
-
     // Extract initiator attributes
     const {
       aggression: initiatorAggression,
@@ -1139,7 +1130,7 @@ const Simulator = () => {
       ((recipientAggression - 1) / 2) * aggressionWeight +
       ((recipientTech - 1) / 2) * techWeight +
       ((recipientEndurance - 1) / 2) * enduranceWeight +
-      ((recipientTrust - 1) / 2) * trustWeight; // Trust factor added
+      recipientTrust * trustWeight; // Trust factor added
 
     // Adjust based on the attractiveness of the trade for the recipient
     const tradeAttractivenessForRecipient =
@@ -1148,7 +1139,7 @@ const Simulator = () => {
     // Trust influences relationship - higher trust means better deals and more willingness
     const relationshipFactor =
       Math.min(1, Math.max(0, (3 - initiatorAggression) / 2)) * 0.15 + // Less aggressive initiator
-      Math.min(1, Math.max(0, (recipientTrust - 1) / 2)) * 0.15; // Higher trust improves relationship
+      Math.min(1, Math.max(0, recipientTrust)) * 0.15; // Higher trust improves relationship
 
     // Calculate acceptance probability
     const acceptanceProbability =
@@ -1174,7 +1165,7 @@ const Simulator = () => {
       { name: "Tech Level", value: ((recipientTech - 1) / 2) * techWeight },
       { name: "Trade Value", value: tradeAttractivenessForRecipient },
       { name: "Relationship", value: relationshipFactor },
-      { name: "Trust Level", value: ((recipientTrust - 1) / 2) * trustWeight },
+      { name: "Trust Level", value: recipientTrust * trustWeight },
     ];
 
     factors.sort((a, b) => b.value - a.value);
@@ -1189,7 +1180,7 @@ const Simulator = () => {
         reason = `positive diplomatic relations`;
       } else {
         reason = `high ${topFactor.name.toLowerCase()} was the deciding factor`;
-        if (((recipientTrust - 1) / 2) * trustWeight > 0.05) {
+        if (recipientTrust * trustWeight > 0.05) {
           reason += ` with trust reinforcing the deal`;
         }
       }
@@ -1280,8 +1271,8 @@ const Simulator = () => {
       // Trust increases - successful trade builds trust
       const initiatorTrustChange = (initiatorBaseImpactPercentage / 100) * 1.2;
       const updatedInitiatorTrust = Math.max(
-        1,
-        Math.min(3, initiatorTrust + initiatorTrustChange),
+        0,
+        Math.min(1, initiatorTrust + initiatorTrustChange),
       );
       newLogs.push({
         message: `Faction ${initiatorFaction === "one" ? "1" : "2"}'s trust in Faction ${initiatorFaction === "one" ? "2" : "1"} increased from ${initiatorTrust.toFixed(2)} to ${updatedInitiatorTrust.toFixed(2)} (successful exchange)`,
@@ -1294,7 +1285,7 @@ const Simulator = () => {
       // Resources decrease for initiator - they're giving resources in trade
       const initiatorResourceChange = tradeAmount;
       const updatedInitiatorResources = Math.max(
-        0,
+        1,
         initiatorResources - initiatorResourceChange,
       );
       newLogs.push({
@@ -1354,8 +1345,8 @@ const Simulator = () => {
       // Trust increases - successful trade builds trust
       const recipientTrustChange = (recipientBaseImpactPercentage / 100) * 1.0;
       const updatedRecipientTrust = Math.max(
-        1,
-        Math.min(3, recipientTrust + recipientTrustChange),
+        0,
+        Math.min(1, recipientTrust + recipientTrustChange),
       );
       newLogs.push({
         message: `Faction ${initiatorFaction === "one" ? "2" : "1"}'s trust in Faction ${initiatorFaction === "one" ? "1" : "2"} increased from ${recipientTrust.toFixed(2)} to ${updatedRecipientTrust.toFixed(2)} (fair trading practices)`,
@@ -1434,15 +1425,15 @@ const Simulator = () => {
       // Initiator trust decreases slightly - rejection creates minor frustration
       const initiatorTrustChange = (trustImpactPercentage / 100) * 0.5;
       const updatedInitiatorTrust = Math.max(
-        1,
-        Math.min(3, initiatorTrust - initiatorTrustChange),
+        0,
+        Math.min(1, initiatorTrust - initiatorTrustChange),
       );
 
       // Recipient trust is largely unchanged but might decrease slightly
       const recipientTrustChange = (trustImpactPercentage / 100) * 0.2;
       const updatedRecipientTrust = Math.max(
-        1,
-        Math.min(3, recipientTrust - recipientTrustChange),
+        0,
+        Math.min(1, recipientTrust - recipientTrustChange),
       );
 
       newLogs.push({

@@ -42,13 +42,19 @@ const Game = () => {
     const faction = fxn === "one" ? factions.factionOne : factions.factionTwo;
     const newLogs: Log[] = [];
 
-    if (Number(attackValue) > faction.manpower) {
+    const attackValueNum = Number(attackValue);
+    if (isNaN(attackValueNum) || attackValueNum <= 0) {
+      newLogs.push({
+        message: `Attack denied: Invalid attack value`,
+        type: "warning",
+      });
+    } else if (attackValueNum > faction.manpower) {
       newLogs.push({
         message: `Attack denied: Faction does not have enough manpower to carry out the attack`,
         type: "warning",
       });
     } else {
-      const killCount = Number(attackValue);
+      const killCount = attackValueNum;
 
       // Extract initial attributes
       const {
@@ -330,14 +336,12 @@ const Game = () => {
 
     const tradeAmount = Number(tradeValue);
 
-    if (tradeAmount <= 0) {
+    if (isNaN(tradeAmount) || tradeAmount <= 0) {
       newLogs.push({
-        message: `Trade denied: Trade amount must be greater than 0`,
+        message: `Trade denied: Invalid trade value`,
         type: "warning",
       });
-      setLogs((prev) => {
-        return [...prev, ...newLogs];
-      });
+      updateLogs(newLogs);
       return;
     }
 
@@ -362,7 +366,7 @@ const Game = () => {
 
     // Calculate faction's willingness to trade
     const tradeWillingness =
-      (playerTrust / 10) * playerTrustWeight +
+      playerTrust * playerTrustWeight +
       ((wealth - 1) / 2) * wealthWeight +
       ((influence - 1) / 2) * influenceWeight +
       ((aggression - 1) / 2) * aggressionWeight +
@@ -381,7 +385,7 @@ const Game = () => {
 
     // Get the highest and lowest contributing factors to explain decision
     const factors = [
-      { name: "Trust", value: (playerTrust / 10) * playerTrustWeight },
+      { name: "Trust", value: playerTrust * playerTrustWeight },
       { name: "Wealth", value: ((wealth - 1) / 2) * wealthWeight },
       { name: "Influence", value: ((influence - 1) / 2) * influenceWeight },
       { name: "Aggression", value: ((aggression - 1) / 2) * aggressionWeight },
@@ -602,7 +606,6 @@ const Game = () => {
     const enduranceWeight = 0.05;
 
     // Calculate faction's willingness to form alliance
-    // FIX: Removed division by 10 for playerTrust since it's already on a 0-1 scale
     const allianceWillingness =
       playerTrust * playerTrustWeight +
       ((aggression - 1) / 2) * aggressionWeight +
@@ -632,7 +635,6 @@ const Game = () => {
 
     // Get the highest and lowest contributing factors to explain decision
     const factors = [
-      // FIX: Removed division by 10 for playerTrust
       { name: "Trust", value: playerTrust * playerTrustWeight },
       { name: "Aggression", value: ((aggression - 1) / 2) * aggressionWeight },
       { name: "Influence", value: ((influence - 1) / 2) * influenceWeight },
@@ -653,7 +655,6 @@ const Game = () => {
       if (bottomFactor.value < 0) {
         reason = `${bottomFactor.name.toLowerCase()} concerns prevented alliance`;
       } else if (playerTrust * playerTrustWeight < 0.2) {
-        // FIX: Removed division by 10 for playerTrust and adjusted threshold to match 0-1 scale
         reason = `insufficient trust`;
       } else {
         reason = `strategic considerations`;
@@ -673,7 +674,6 @@ const Game = () => {
       // ALLIANCE ACCEPTED SCENARIO
 
       // PlayerTrust increases significantly - alliance is a major commitment
-      // FIX: Adjusted to work with 0-1 scale
       const playerTrustChange =
         (baseImpactPercentage / 100) * (1 - playerTrust) * 2.0;
       const updatedPlayerTrust = Math.max(
