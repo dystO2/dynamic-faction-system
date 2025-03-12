@@ -2,7 +2,7 @@ import { useAtom, useAtomValue, useSetAtom } from "jotai";
 import { atomWithReset, useResetAtom } from "jotai/utils";
 
 interface PlayerInteraction {
-  faction: "one" | "two" | null;
+  faction: string | null;
   action: "attack" | "trade with" | "form an alliance with" | null;
 }
 
