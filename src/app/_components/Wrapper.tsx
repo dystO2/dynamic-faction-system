@@ -18,7 +18,7 @@ interface FactionEditorProps {
   updateFaction: (
     factionId: string,
     property: keyof Faction,
-    value: number,
+    value: number | string,
   ) => void;
 }
 
@@ -35,7 +35,7 @@ const FactionEditor: React.FC<FactionEditorProps> = ({
         type="text"
         value={faction.name}
         onChange={(e) =>
-          updateFaction(factionId, "name", Number(e.target.value))
+          updateFaction(factionId, "name", e.target.value)
         }
         className="rounded-md border bg-zinc-700 px-3 py-2 text-white"
         placeholder="Faction Name"
